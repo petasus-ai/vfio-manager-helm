@@ -1,0 +1,10 @@
+apiVersion: v1
+appVersion: "3.3.0"
+description: A Helm chart for Rebellions VFIO-manager
+name: rebellions-vfio-manager
+version: 3.3.0
+sources:
+  - https://github.com/edgestack/edgetron
+maintainers:
+  - name: Changju Kim
+    email: changju.gim@sk.com
