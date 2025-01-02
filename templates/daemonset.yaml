@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: rebellions-vfio-manager
-  namespace: {{ .Values.namespace }}
+  name: {{ .Values.vendor }}-vfio-manager
+  namespace: {{ .Values.vendor }}
   labels:
-    app: rebellions-vfio-manager
+    app: {{ .Values.vendor }}-vfio-manager
 spec:
   selector:
     matchLabels:
-      name: rebellions-vfio-manager
+      name: {{ .Values.vendor }}-vfio-manager
   template:
     metadata:
       labels:
-        name: rebellions-vfio-manager
+        name: {{ .Values.vendor }}-vfio-manager
     spec:
       priorityClassName: system-node-critical
-      serviceAccountName: rebellions-vfio-manager
+      serviceAccountName: {{ .Values.vendor }}-vfio-manager
       containers:
-        - name: rebellions-vfio-manager
+        - name: {{ .Values.vendor }}-vfio-manager
           image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["/bin/bash", "-c"]
@@ -30,7 +30,7 @@ spec:
               cpu: 100m
               memory: 200Mi
           volumeMounts:
-          - name: rebellions-vfio-manager
+          - name: {{ .Values.vendor }}-vfio-manager
             readOnly: true
             mountPath: /bin/vfio-manage.sh
             subPath: vfio-manage.sh
@@ -48,9 +48,9 @@ spec:
                 command: ["/bin/sh", "-c", "/bin/vfio-manage.sh unbind --all"]
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: rebellions-vfio-manager
+        - name: {{ .Values.vendor }}-vfio-manager
           configMap:
-            name: rebellions-vfio-manager
+            name: {{ .Values.vendor }}-vfio-manager
             defaultMode: 448
         - name: host-sys
           hostPath:

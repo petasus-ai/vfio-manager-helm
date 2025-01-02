@@ -1,8 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: rebellions-vfio-manager
-  namespace: {{ .Values.namespace }}
+  name: {{ .Values.vendor }}-vfio-manager
+  namespace: {{ .Values.vendor }}
 rules:
 - apiGroups:
   - security.openshift.io

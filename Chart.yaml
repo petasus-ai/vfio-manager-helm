@@ -1,7 +1,7 @@
 apiVersion: v1
 appVersion: "3.3.0"
-description: A Helm chart for Rebellions VFIO-manager
-name: rebellions-vfio-manager
+description: A Helm chart for VFIO-manager
+name: vfio-manager
 version: 3.3.0
 sources:
   - https://github.com/edgestack/edgetron
