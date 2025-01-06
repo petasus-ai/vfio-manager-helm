@@ -2,4 +2,5 @@ vendor: rebellions
 vendorID: "0x1eff"
 image: "docker.io/redhat/ubi8:8.10"
 imagePullPolicy: IfNotPresent
-deviceClass: "0x120000"
+deviceClass:
+  - "0x120000"

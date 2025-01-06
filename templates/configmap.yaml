@@ -62,8 +62,15 @@ data:
         # make sure device class is for target npu
         device_class_file=$(readlink -f "/sys/bus/pci/devices/$npu/class")
         device_class=$(cat "$device_class_file")
-        [ "$device_class" == "{{ .Values.deviceClass }}" ] || return 1
-        return 0
+
+        # Check if device_class matches any of the values in the list
+        local valid_classes=({{ .Values.deviceClass | join " " }})
+        for valid_class in "${valid_classes[@]}"; do
+            if [ "$device_class" == "$valid_class" ]; then
+                return 0
+            fi
+        done
+        return 1
     }
 
     is_bound_to_vfio() {
