@@ -25,63 +25,77 @@ data:
     }
 
     unbind_from_driver() {
-        local npu=$1
+        local xpu=$1
         local existing_driver_name
         local existing_driver
 
-        [ -e "/sys/bus/pci/devices/$npu/driver" ] || return 0
+        [ -e "/sys/bus/pci/devices/$xpu/driver" ] || return 0
 
-        existing_driver=$(readlink -f "/sys/bus/pci/devices/$npu/driver")
+        existing_driver=$(readlink -f "/sys/bus/pci/devices/$xpu/driver")
         existing_driver_name=$(basename "$existing_driver")
 
-        echo "unbinding device $npu from driver $existing_driver_name"
-        echo "$npu" > "$existing_driver/unbind"
-        echo > /sys/bus/pci/devices/$npu/driver_override
+        echo "unbinding device $xpu from driver $existing_driver_name"
+        echo "$xpu" > "$existing_driver/unbind"
+        echo > /sys/bus/pci/devices/$xpu/driver_override
     }
 
     # unbind device from non vfio-pci driver
     unbind_from_other_driver() {
-        local npu=$1
+        local xpu=$1
         local existing_driver_name
         local existing_driver
 
-        [ -e "/sys/bus/pci/devices/$npu/driver" ] || return 0
+        [ -e "/sys/bus/pci/devices/$xpu/driver" ] || return 0
 
-        existing_driver=$(readlink -f "/sys/bus/pci/devices/$npu/driver")
+        existing_driver=$(readlink -f "/sys/bus/pci/devices/$xpu/driver")
         existing_driver_name=$(basename "$existing_driver")
 
         # return if bound to vfio-pci
         [ "$existing_driver_name" != "vfio-pci" ] || return 0
-        echo "unbinding device $npu from driver $existing_driver_name"
-        echo "$npu" > "$existing_driver/unbind"
-        echo > /sys/bus/pci/devices/$npu/driver_override
+        echo "unbinding device $xpu from driver $existing_driver_name"
+        echo "$xpu" > "$existing_driver/unbind"
+        echo > /sys/bus/pci/devices/$xpu/driver_override
     }
 
-    is_target_npu_device() {
-        local npu=$1
-        # make sure device class is for target npu
-        device_class_file=$(readlink -f "/sys/bus/pci/devices/$npu/class")
+    is_target_xpu_device() {
+        local xpu=$1
+        # make sure device class is for target xpu
+        device_class_file=$(readlink -f "/sys/bus/pci/devices/$xpu/class")
         device_class=$(cat "$device_class_file")
 
-        # Check if device_class matches any of the values in the list
-        local valid_classes=({{ .Values.deviceClass | join " " }})
-        for valid_class in "${valid_classes[@]}"; do
-            if [ "$device_class" == "$valid_class" ]; then
+        # make sure device is for target xpu
+        device_file=$(readlink -f "/sys/bus/pci/devices/$xpu/device")
+        device=$(cat "$device_file")
+
+        # Iterate over each xpu entry defined in Helm values.
+        {{- range .Values.xpu }}
+        # Check if the device class matches.
+        if [ "$device_class" == "{{ .deviceClass }}" ]; then
+            {{- if .device }}
+            # If a device is specified, check that it matches.
+            if [ "$device" == "{{ .device }}" ]; then
                 return 0
             fi
-        done
+            {{- else }}
+            # If no device value is provided in this entry, then a class match is enough.
+            return 0
+            {{- end }}
+        fi
+        {{- end }}
+
+        # If no entry matches, return 1.
         return 1
     }
 
     is_bound_to_vfio() {
-        local npu=$1
+        local xpu=$1
         local existing_driver_name
         local existing_driver
 
         # return if not bound to any driver
-        [ -e "/sys/bus/pci/devices/$npu/driver" ] || return 1
+        [ -e "/sys/bus/pci/devices/$xpu/driver" ] || return 1
 
-        existing_driver=$(readlink -f "/sys/bus/pci/devices/$npu/driver")
+        existing_driver=$(readlink -f "/sys/bus/pci/devices/$xpu/driver")
         existing_driver_name=$(basename "$existing_driver")
 
         echo "existing driver is $existing_driver_name"
@@ -93,14 +107,14 @@ data:
     }
 
     unbind_device() {
-        local npu=$1
+        local xpu=$1
 
-        if ! is_target_npu_device $npu; then
+        if ! is_target_xpu_device $xpu; then
             return 0
         fi
 
-        echo "unbinding device $npu"
-        unbind_from_driver $npu
+        echo "unbinding device $xpu"
+        unbind_from_driver $xpu
     }
 
     unbind_all() {
@@ -114,27 +128,27 @@ data:
     }
 
     bind_pci_device() {
-        local npu=$1
+        local xpu=$1
 
-        if ! is_bound_to_vfio $npu; then
-          unbind_from_other_driver $npu
-          echo "binding device $npu"
-          echo "vfio-pci" > /sys/bus/pci/devices/$npu/driver_override
-          echo "$npu" > /sys/bus/pci/drivers/vfio-pci/bind
+        if ! is_bound_to_vfio $xpu; then
+          unbind_from_other_driver $xpu
+          echo "binding device $xpu"
+          echo "vfio-pci" > /sys/bus/pci/devices/$xpu/driver_override
+          echo "$xpu" > /sys/bus/pci/drivers/vfio-pci/bind
         else
-          echo "device $npu already bound to vfio-pci"
+          echo "device $xpu already bound to vfio-pci"
         fi
     }
 
     bind_device() {
-        local npu=$1
+        local xpu=$1
 
-        if ! is_target_npu_device $npu; then
-            echo "device $npu is not a npu!"
+        if ! is_target_xpu_device $xpu; then
+            echo "device $xpu is not a xpu!"
             return 0
         fi
 
-        bind_pci_device "$npu"
+        bind_pci_device "$xpu"
     }
 
     bind_all() {
