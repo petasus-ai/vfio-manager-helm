@@ -1,6 +1,6 @@
 vendor: rebellions
 vendorID: "0x1eff"
-image: "docker.io/redhat/ubi8:8.10"
+image: "quay.io/edgestack/kubevirt-xpu-tool:latest"
 imagePullPolicy: IfNotPresent
 xpu:
   - deviceClass: "0x120000"
