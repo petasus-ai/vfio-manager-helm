@@ -1,8 +1,8 @@
 apiVersion: v1
-appVersion: "3.4.0"
+appVersion: "3.5.0"
 description: A Helm chart for VFIO-manager
 name: vfio-manager
-version: 3.4.0
+version: 3.5.0
 sources:
   - https://github.com/edgestack/edgetron
 maintainers:
