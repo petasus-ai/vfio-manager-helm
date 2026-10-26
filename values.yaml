@@ -1,6 +1,7 @@
 vendor: rebellions
 vendorID: "0x1eff"
-image: "quay.io/edgestack/kubevirt-xpu-tool:latest"
+# A release of petasus-ai/kubevirt-xpu-tool.
+image: "quay.io/edgestack/kubevirt-xpu-tool:v3.5.0"
 imagePullPolicy: IfNotPresent
 xpu:
   - deviceClass: "0x120000"
